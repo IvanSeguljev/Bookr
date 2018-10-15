@@ -10,10 +10,12 @@
 | and give it the Closure to call when that URI is requested.
 |
 */
-
+//Book Controller routes
 $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 $router->get("/books", 'BooksController@Index');
 
-$router->get("/books/{id}",'BooksController@Show');
+$router->get("/books/{id:[\d]+}",'BooksController@Show');
+
+$router->post("/books","BooksController@Store");

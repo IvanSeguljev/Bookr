@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use App\Book;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
+
 class BooksController extends BaseController
 {
     public function Index()
@@ -15,7 +17,7 @@ class BooksController extends BaseController
     public function Show($id)
     {
         try{
-            $book = Book::findOrFail($id);
+            return  Book::findOrFail($id);
         }
         catch (ModelNotFoundException $ex)
         {
@@ -25,6 +27,13 @@ class BooksController extends BaseController
                  ]
             ], 404); 
         }
-        return $book;
+        
+    }
+    
+    public function Store(Request $request)
+    {
+        
+        $book = Book::create($request->all()); 
+        return response()->json(["created"=>TRUE], 201);
     }
 }

@@ -51,6 +51,23 @@ class BooksControllerTest extends TestCase{
     /** @test **/
     public function show_route_must_not_match_invalid_route()
     {
-        $this->markTestIncomplete('pending test');
+        $this->get('/books/nije-broj');
+        $this->assertNotRegExp('/Book not found/', $this->response->getOriginalContent(),'BooksController@show route matching when it should not.');
     }
-}
+    
+    /** @test **/
+    public function store_should_store_book_in_database(){
+        $this->post('/books', [
+            'title'=>"test knjiga",
+            'description'=>"test opis",
+            'author'=>"test autor"
+        ]);
+        
+        $this->seeJson(["created"=>TRUE])->seeInDatabase('books', ["title"=>"test knjiga"]);
+    }
+    
+    /** @test **/
+    public function store_should_return_status_201_and_location_header(){
+         $this->markTestIncomplete('pending');
+    }
+}   
