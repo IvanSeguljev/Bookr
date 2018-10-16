@@ -11,4 +11,18 @@ abstract class TestCase extends Laravel\Lumen\Testing\TestCase
     {
         return require __DIR__.'/../bootstrap/app.php';
     }
+    public function seeHasHeader($header)
+    {
+        $this->assertTrue(
+        $this->response->headers->has($header),"Header pod nazivom {$header} ne postoji"
+                );
+        return $this;
+    }
+    
+    public function seeHasHeaderRegExp($header,$regExp)
+    {
+        $this->seeHasHeader($header);
+        $this->assertRegExp($regExp,$this->response->headers->get($header));
+        return $this;
+    }
 }

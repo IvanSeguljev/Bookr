@@ -68,6 +68,11 @@ class BooksControllerTest extends TestCase{
     
     /** @test **/
     public function store_should_return_status_201_and_location_header(){
-         $this->markTestIncomplete('pending');
+         $this->post('/books', [
+            'title'=>"test knjiga",
+            'description'=>"test opis",
+            'author'=>"test autor"
+        ]);
+        $this->seeStatusCode(201)->seeHasHeaderRegExp('location', '/\/books\/[\d]+$/');
     }
 }   
