@@ -54,4 +54,22 @@ class BooksController extends BaseController
         $book->save();
         return response(json_encode($book), 200);
     }
+    
+    public function Delete($id)
+    {
+        try
+        {
+        $book = Book::findOrFail($id);
+        }
+        catch (ModelNotFoundException $ex)
+        {
+            return response()->json([
+                "error" => [
+                    "message"=>"Knjiga nije nadjena"
+            ]
+            ], 404);
+        }
+        $book->delete();
+        return response(NULL, 204);
+    }
 }
