@@ -19,3 +19,5 @@ $router->get("/books", 'BooksController@Index');
 $router->get("/books/{id:[\d]+}",['uses'=>'BooksController@Show','as'=>'books.Show']);
 
 $router->post("/books","BooksController@Store");
+
+$router->put("/books/{id:[\d]+}",'BooksController@Update');

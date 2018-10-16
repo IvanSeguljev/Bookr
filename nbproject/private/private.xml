@@ -8,6 +8,7 @@
             <file>file:/C:/xampp/htdocs/Bookr/app/Http/Controllers/BooksController.php</file>
             <file>file:/C:/xampp/htdocs/Bookr/routes/web.php</file>
             <file>file:/C:/xampp/htdocs/Bookr/database/seeds/BooksTableSeeder.php</file>
+            <file>file:/C:/xampp/htdocs/Bookr/tests/TestCase.php</file>
             <file>file:/C:/xampp/htdocs/Bookr/app/Book.php</file>
         </group>
     </open-files>

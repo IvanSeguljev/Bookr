@@ -75,4 +75,39 @@ class BooksControllerTest extends TestCase{
         ]);
         $this->seeStatusCode(201)->seeHasHeaderRegExp('location', '/\/books\/[\d]+$/');
     }
+    
+    /** @test **/
+    public function update_should_only_change_fillable_fields()
+    {
+        $this->notSeeInDatabase('books', ['title'=>'Updejtovana Knjiga']);
+        
+        $this->put('/books/1', [
+            'id'=>'666',
+            'title'=>'Updejtovana Knjiga',
+            'description'=>'updejtovani opis',
+            'author'=>'updejtovani autor'
+        ]);
+       
+        $this->seeStatusCode(200)
+                ->seeJson([
+                    'id'=>1,
+                    'title'=>'Updejtovana Knjiga',
+                    'description'=>'updejtovani opis',
+                    'author'=>'updejtovani autor'
+                ]);
+        $this->seeInDatabase('books', [
+            'id'=>1,
+            'title'=>'Updejtovana Knjiga'
+        ]);
+    }
+    /** @test **/
+    public function update_should_fail_on_non_existing_id()
+    {
+        $this->markTestIncomplete('jbg');
+    }
+    /** @test **/
+    public function update_route_must_not_match_invalid_route()
+    {
+        $this->markTestIncomplete('jbg');
+    }
 }   

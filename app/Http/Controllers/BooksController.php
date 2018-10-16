@@ -36,4 +36,11 @@ class BooksController extends BaseController
         $book = Book::create($request->all()); 
         return response()->json(["created"=>TRUE], 201,['location'=> route('books.Show', ['id'=>$book->id])]);
     }
+    
+    public function Update(Request $req,$id){
+        $book = Book::findOrFail($id);
+        $book->fill($req->all());
+        $book->save();
+        return response(json_encode($book), 200);
+    }
 }
