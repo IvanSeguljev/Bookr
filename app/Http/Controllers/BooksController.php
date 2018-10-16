@@ -38,7 +38,18 @@ class BooksController extends BaseController
     }
     
     public function Update(Request $req,$id){
-        $book = Book::findOrFail($id);
+        try
+        {
+            $book = Book::findOrFail($id);
+        }
+        catch (ModelNotFoundException $ex)
+        {
+            return response()->json([
+            "error"=>[
+                "message"=>"Book not found"
+                ]
+            ], 404);
+        }
         $book->fill($req->all());
         $book->save();
         return response(json_encode($book), 200);
