@@ -3,9 +3,10 @@
 namespace tests\app\Http\Controllers;
 
 use TestCase;
-
+use Laravel\Lumen\Testing\DatabaseMigrations;
 class BooksControllerTest extends TestCase{
     
+    use DatabaseMigrations;
     /** @test **/
     public function index_status_code_should_be_200()
     {
@@ -15,19 +16,28 @@ class BooksControllerTest extends TestCase{
     /** @test **/
     public function index_should_return_collection_of_records()
     {
-        $this->get('/books')->seeJson(['title'=>'Gospodar prstenova'])->seeJson(['title'=>'PHP Kuvar']);
+        $books = factory('App\Book',2)->create();
+        
+        $this->get('/books');
+        foreach ($books as $book)
+        {
+            $this->seeJson([
+               'title' => $book->title 
+            ]);
+        }
     }
     
     /** @test **/
     public function show_should_return_valid_book()
     {
+        $book = factory('App\Book')->create();
         $this
-             ->get('/books/1')
+             ->get('/books/'.$book->id)
              ->seeStatusCode(200)
              ->seeJson([
-                     'title' => 'Gospodar prstenova',
-                     'description' => 'Frodo i druzina kolju saurona',
-                     'author' => 'H. G. Wells',
+                     'title' => $book->title,
+                     'description' => $book->description,
+                     'author' => $book->author
                      ]);
         
         $data = json_decode($this->response->getOriginalContent(),TRUE);
@@ -79,9 +89,13 @@ class BooksControllerTest extends TestCase{
     /** @test **/
     public function update_should_only_change_fillable_fields()
     {
-        $this->notSeeInDatabase('books', ['title'=>'Updejtovana Knjiga']);
+        $book = factory('App\Book')->create([
+           'title' => 'Ja nisam metalac',
+           'author' => 'Random lik koji navija za zvezdu',
+           'description' => 'Tuzna prica o liku kome je jedini kvalitet sto nije metalac'
+        ]);
         
-        $this->put('/books/1', [
+        $this->put("/books/{$book->id}", [
             'id'=>'666',
             'title'=>'Updejtovana Knjiga',
             'description'=>'updejtovani opis',
@@ -90,13 +104,13 @@ class BooksControllerTest extends TestCase{
        
         $this->seeStatusCode(200)
                 ->seeJson([
-                    'id'=>1,
+                    'id'=>$book->id,
                     'title'=>'Updejtovana Knjiga',
                     'description'=>'updejtovani opis',
                     'author'=>'updejtovani autor'
                 ]);
         $this->seeInDatabase('books', [
-            'id'=>1,
+            'id'=>$book->id,
             'title'=>'Updejtovana Knjiga'
         ]);
     }
@@ -124,10 +138,11 @@ class BooksControllerTest extends TestCase{
     /** @test **/
     public function destroy_should_remove_valid_book_and_return_204()
     {
-        $this->delete('/books/1');
+        $book = factory('App\Book')->create();
+        $this->delete('/books/'.$book->id);
         $this->seeStatusCode(204)->isEmpty();
         
-        $this->notSeeInDatabase('books', ['id'=>1]);
+        $this->notSeeInDatabase('books', ['id'=>$book->id]);
     }
     /** @test **/
     public function desstroy_should_return_404_for_non_existing_book()
