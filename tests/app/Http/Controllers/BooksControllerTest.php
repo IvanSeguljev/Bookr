@@ -19,12 +19,7 @@ class BooksControllerTest extends TestCase{
         $books = factory('App\Book',2)->create();
         
         $this->get('/books');
-        foreach ($books as $book)
-        {
-            $this->seeJson([
-               'title' => $book->title 
-            ]);
-        }
+        $this->seeJson(['data'=>$books->toArray()]);
     }
     
     /** @test **/
@@ -34,27 +29,23 @@ class BooksControllerTest extends TestCase{
         $this
              ->get('/books/'.$book->id)
              ->seeStatusCode(200)
-             ->seeJson([
-                     'title' => $book->title,
-                     'description' => $book->description,
-                     'author' => $book->author
-                     ]);
+             ->seeJson( $book->toArray()
+                     );
         
-        $data = json_decode($this->response->getOriginalContent(),TRUE);
-        $this->assertArrayHasKey('created_at',$data);
-        $this->assertArrayHasKey('updated_at',$data);
+       
+       
     }
     
     /** @test **/
     public function show_should_fail_if_book_doesnt_exist()
     {
         $this
-             ->get('/books/9999')
+             ->get('/books/9999',['Accept'=>"application/json"])
              ->seeStatusCode(404)
              ->seeJson([
-                'error' => [
-                'message' => 'Book not found'
-            ]
+                'status' => 404,
+                'message' => 'NotFound'
+            
         ]); 
     }
     

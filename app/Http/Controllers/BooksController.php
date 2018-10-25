@@ -11,19 +11,20 @@ class BooksController extends BaseController
 {
     public function Index()
     {
-        return Book::all();
+        return ["data"=>Book::all()];
     }
     
     public function Show($id)
     {
         try{
-            return  Book::findOrFail($id);
+            return  ['data'=>Book::findOrFail($id)];
         }
         catch (ModelNotFoundException $ex)
         {
            return response()->json([
                 'error' => [
-                    'message' => 'Book not found'
+                    'message' => 'NotFound',
+                    'status'=> 404
                  ]
             ], 404); 
         }
