@@ -44,7 +44,7 @@ class BooksControllerTest extends TestCase{
              ->seeStatusCode(404)
              ->seeJson([
                 'status' => 404,
-                'message' => 'NotFound'
+                'message' => 'Not Found'
             
         ]); 
     }
@@ -117,7 +117,7 @@ class BooksControllerTest extends TestCase{
         
         $this->seeStatusCode(404)->seeJson([
             "error"=>[
-                "message"=>"Book not found"
+                "message"=>"Not Found"
             ]
         ]);
     }
@@ -141,7 +141,7 @@ class BooksControllerTest extends TestCase{
         $this->delete("/books/9999")->seeStatusCode(404);
         $this->seeJson([
             "error" => [
-                "message"=>"Knjiga nije nadjena"
+                "message"=>"Not Found"
             ]
         ]);
     }

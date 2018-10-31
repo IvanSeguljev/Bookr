@@ -23,7 +23,7 @@ class BooksController extends BaseController
         {
            return response()->json([
                 'error' => [
-                    'message' => 'NotFound',
+                    'message' => 'Not Found',
                     'status'=> 404
                  ]
             ], 404); 
@@ -47,7 +47,7 @@ class BooksController extends BaseController
         {
             return response()->json([
             "error"=>[
-                "message"=>"Book not found"
+                "message"=>"Not Found"
                 ]
             ], 404);
         }
@@ -66,7 +66,7 @@ class BooksController extends BaseController
         {
             return response()->json([
                 "error" => [
-                    "message"=>"Knjiga nije nadjena"
+                    "message"=>"Not Found"
             ]
             ], 404);
         }
