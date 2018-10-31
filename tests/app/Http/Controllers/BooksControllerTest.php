@@ -29,8 +29,8 @@ class BooksControllerTest extends TestCase{
         $this
              ->get('/books/'.$book->id)
              ->seeStatusCode(200)
-             ->seeJson( $book->toArray()
-                     );
+             ->seeJson(["data"=> $book->toArray()
+                     ]);
         
        
        
@@ -63,6 +63,16 @@ class BooksControllerTest extends TestCase{
             'description'=>"test opis",
             'author'=>"test autor"
         ]);
+        
+        $body = $this->response->getOriginalContent();
+        $this->assertArrayHasKey("data",$body);
+        
+        $data = $body['data'];
+        $this->assertEquals("test knjiga",$data['title']);
+        $this->assertEquals('test opis',$data['description']);
+        $this->assertEquals("test autor",$data['author']);
+        $this->assertTrue($data['id']>0,"Id mora biti veci od 0 !!!");
+        
         
         $this->seeJson(["created"=>TRUE])->seeInDatabase('books', ["title"=>"test knjiga"]);
     }
@@ -104,6 +114,9 @@ class BooksControllerTest extends TestCase{
             'id'=>$book->id,
             'title'=>'Updejtovana Knjiga'
         ]);
+        
+        $body = $this->response->getOriginalContent();
+        $this->assertArrayHasKey('data',$body);
     }
     /** @test **/
     public function update_should_fail_on_non_existing_id()
