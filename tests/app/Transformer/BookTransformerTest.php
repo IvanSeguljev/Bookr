@@ -29,7 +29,9 @@ class BookTransformerTest extends TestCase{
         $this->assertArrayHasKey("title",$transform);
         $this->assertArrayHasKey('description',$transform);
         $this->assertArrayHasKey('author',$transform);
-        $this->assertArrayHasKey('created_at',$transform);
-        $this->assertArrayHasKey('updated_at',$transform);
+        $this->assertArrayHasKey('created',$transform);
+        $this->assertArrayHasKey('updated',$transform);
+        $this->assertEquals($book->created_at->toIso8601String(),$transform['created']);
+        $this->assertEquals($book->updated_at->toIso8601String(),$transform['updated']);
     }
 }

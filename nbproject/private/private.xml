@@ -8,8 +8,10 @@
             <file>file:/C:/xampp/htdocs/Bookr/app/Http/Controllers/BooksController.php</file>
             <file>file:/C:/xampp/htdocs/Bookr/app/Exceptions/Handler.php</file>
             <file>file:/C:/xampp/htdocs/Bookr/tests/app/Transformer/BookTransformerTest.php</file>
+            <file>file:/C:/xampp/htdocs/Bookr/tests/app/Http/Response/FractalResponseTest.php</file>
             <file>file:/C:/xampp/htdocs/Bookr/tests/TestCase.php</file>
             <file>file:/C:/xampp/htdocs/Bookr/tests/app/Exceptions/HandlerTest.php</file>
+            <file>file:/C:/xampp/htdocs/Bookr/app/Http/Response/FractalResponse.php</file>
         </group>
     </open-files>
 </project-private>
