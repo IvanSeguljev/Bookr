@@ -2,22 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use Laravel\Lumen\Routing\Controller as BaseController;
+
 use App\Book;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use App\Transformer\BookTransformer;
 
-class BooksController extends BaseController
+class BooksController extends Controller
 {
     public function Index()
     {
-        return ["data"=>Book::all()];
+        return $this->collection(Book::all(), new BookTransformer);
     }
     
     public function Show($id)
     {
         try{
-            return  ['data'=>Book::findOrFail($id)];
+            return  $this->item(Book::findOrFail($id), new BookTransformer());
         }
         catch (ModelNotFoundException $ex)
         {
@@ -35,7 +36,8 @@ class BooksController extends BaseController
     {
         
         $book = Book::create($request->all()); 
-        return response()->json(["created"=>TRUE,'data'=>$book], 201,['location'=> route('books.Show', ['id'=>$book->id])]);
+        $data = $this->item($book, new BookTransformer);
+        return response()->json($data, 201,['location'=> route('books.Show', ['id'=>$book->id])]);
     }
     
     public function Update(Request $req,$id){
@@ -53,7 +55,7 @@ class BooksController extends BaseController
         }
         $book->fill($req->all());
         $book->save();
-        return response(['data'=>$book->toArray()], 200);
+        return response($this->item($book,new BookTransformer), 200);
     }
     
     public function Delete($id)

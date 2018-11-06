@@ -7,6 +7,7 @@ use League\Fractal\Manager;
 use League\Fractal\TransformerAbstract;
 use League\Fractal\Resource\Item;
 use League\Fractal\Resource\Collection;
+use League\Fractal\Resource\ResourceInterface;
 
 class FractalResponse{
     
@@ -23,14 +24,16 @@ class FractalResponse{
     
     public function item($data, TransformerAbstract $transformer, $resourceKey = null)
     {
-        $resource = new Item($data, $transformer,$resourceKey);
-       
-        return $this->manager->createData($resource)->toArray();
+        return $this->createDataArray(new Item($data, $transformer,$resourceKey));
     }
     
     public function collection($data, TransformerAbstract $transformer, $resourceKey = null)
     {
-        $resource = new Collection($data,$transformer,$resourceKey);
+        return $this->createDataArray(new Collection($data,$transformer,$resourceKey));
+    }
+    
+    private function createDataArray(ResourceInterface $resource)
+    {
         return $this->manager->createData($resource)->toArray();
     }
 }

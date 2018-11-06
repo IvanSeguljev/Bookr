@@ -4,8 +4,21 @@ namespace tests\app\Http\Controllers;
 
 use TestCase;
 use Laravel\Lumen\Testing\DatabaseMigrations;
+use Carbon\Carbon;
 class BooksControllerTest extends TestCase{
     
+    public function setUp()
+    {
+        parent::setUp();
+        Carbon::setTestNow(Carbon::now());
+    }
+    public function tearDown() {
+        parent::tearDown();
+        
+        Carbon::setTestNow();
+    }
+
+
     use DatabaseMigrations;
     /** @test **/
     public function index_status_code_should_be_200()
@@ -19,18 +32,40 @@ class BooksControllerTest extends TestCase{
         $books = factory('App\Book',2)->create();
         
         $this->get('/books');
-        $this->seeJson(['data'=>$books->toArray()]);
+        $content = $this->response->getOriginalContent();
+        
+        
+        foreach ($books as $book)
+        {
+            $this->seeJson([
+                'id' =>$book->id,
+                'title' => $book->title,
+                'description' => $book->description,
+                'author' => $book->author,
+                'created' => $book->created_at->toIso8601String(),
+                'updated' => $book->updated_at->toIso8601String()
+            ]);
+        }
     }
     
     /** @test **/
     public function show_should_return_valid_book()
     {
         $book = factory('App\Book')->create();
-        $this
-             ->get('/books/'.$book->id)
-             ->seeStatusCode(200)
-             ->seeJson(["data"=> $book->toArray()
-                     ]);
+        
+        $this->get("/books/" . $book->id);
+        
+        $content = $this->response->getOriginalContent();
+        $data = $content['data'];
+        
+        $this->assertArrayHasKey("data",$content);
+        
+        $this->assertEquals($book->id,$data['id']);
+        $this->assertEquals($book->author,$data['author']);
+        $this->assertEquals($book->description,$data['description']);
+        $this->assertEquals($book->title,$data['title']);
+        $this->assertEquals($book->created_at->toIso8601String(),$data['created']);
+        $this->assertEquals($book->updated_at->toIso8601String(),$data['updated']);
         
        
        
@@ -72,9 +107,11 @@ class BooksControllerTest extends TestCase{
         $this->assertEquals('test opis',$data['description']);
         $this->assertEquals("test autor",$data['author']);
         $this->assertTrue($data['id']>0,"Id mora biti veci od 0 !!!");
+        $this->assertEquals(Carbon::now()->toIso8601String(),$data['created']);
+        $this->assertEquals(Carbon::now()->toIso8601String(),$data['created']);
         
         
-        $this->seeJson(["created"=>TRUE])->seeInDatabase('books', ["title"=>"test knjiga"]);
+        $this->seeInDatabase('books', ["title"=>"test knjiga"]);
     }
     
     /** @test **/
@@ -117,6 +154,10 @@ class BooksControllerTest extends TestCase{
         
         $body = $this->response->getOriginalContent();
         $this->assertArrayHasKey('data',$body);
+        $this->assertArrayHasKey('updated',$body['data']);
+        $this->assertArrayHasKey('created',$body['data']);
+        $this->assertEquals(Carbon::now()->toIso8601String(),$body['data']['created']);
+        $this->assertEquals(Carbon::now()->toIso8601String(),$body['data']['updated']);
     }
     /** @test **/
     public function update_should_fail_on_non_existing_id()
