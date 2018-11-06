@@ -6,6 +6,7 @@ use League\Fractal\Serializer\SerializerAbstract;
 use League\Fractal\Manager;
 use League\Fractal\TransformerAbstract;
 use League\Fractal\Resource\Item;
+use League\Fractal\Resource\Collection;
 
 class FractalResponse{
     
@@ -24,6 +25,12 @@ class FractalResponse{
     {
         $resource = new Item($data, $transformer,$resourceKey);
        
+        return $this->manager->createData($resource)->toArray();
+    }
+    
+    public function collection($data, TransformerAbstract $transformer, $resourceKey = null)
+    {
+        $resource = new Collection($data,$transformer,$resourceKey);
         return $this->manager->createData($resource)->toArray();
     }
 }

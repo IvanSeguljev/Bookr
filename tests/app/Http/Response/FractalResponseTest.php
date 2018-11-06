@@ -43,4 +43,25 @@ class FractalResponseTest extends TestCase{
         $subject = new FractalResponse($manager,$serializer);
         $this->assertInternalType('array',$subject->item(['foo'=>'bar'],$transformer));
     }
+    
+    /** @test **/
+    public function it_can_transform_a_collection()
+    {
+        $transformer = m::mock(TransformerAbstract::class);
+        
+        $data = ['foo' =>'bar'];
+        
+        $scope = m::mock(Scope::class);
+        $scope->shouldReceive("toArray")->once()->andReturn($data);
+        
+        $serializer = m::mock(SerializerAbstract::class);
+        
+        $manager = m::mock(Manager::class);
+        $manager->shouldReceive("setSerializer")->with($serializer)->once();
+        $manager->shouldReceive("createData")->once()->andReturn($scope);
+        
+        $subject = new FractalResponse($manager,$serializer);
+        
+        $this->assertInternalType('array',$subject->collection($data,$transformer));
+    }
 }
