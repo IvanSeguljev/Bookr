@@ -5,6 +5,7 @@ namespace tests\app\Http\Controllers;
 use TestCase;
 use Laravel\Lumen\Testing\DatabaseMigrations;
 use Carbon\Carbon;
+use Illuminate\Http\Response;
 class BooksControllerTest extends TestCase{
     
     public function setUp()
@@ -124,6 +125,25 @@ class BooksControllerTest extends TestCase{
         $this->seeStatusCode(201)->seeHasHeaderRegExp('location', '/\/books\/[\d]+$/');
     }
     
+    
+    /** @test **/
+    public function it_validates_required_fields_when_storing_a_book()
+    {
+        $this->post('/books', [],['Accept'=>'application/json']);
+        
+        $this->assertEquals(Response::HTTP_UNPROCESSABLE_ENTITY, $this->response->getStatusCode());
+        
+        $body = $this->response->getOriginalContent();
+        
+        $this->assertArrayHasKey('title',$body);
+        $this->assertArrayHasKey('author',$body);
+        $this->assertArrayHasKey('description',$body);
+        
+        $this->assertEquals('The title field is required.',$body['title'][0]);
+        $this->assertEquals('The author field is required.',$body['author'][0]);
+        $this->assertEquals('The description field is required.',$body['description'][0]);
+    }
+    
     /** @test **/
     public function update_should_only_change_fillable_fields()
     {
@@ -179,6 +199,27 @@ class BooksControllerTest extends TestCase{
     public function update_route_must_not_match_invalid_route()
     {
         $this->put('/books/nepostojeca')->seeStatusCode(404);
+    }
+    
+    /** @test **/
+    public function it_validates_passed_fields_when_updating_a_book()
+    {
+        $book = factory(\App\Book::class)->create();
+        
+        $this->put("/books/{$book->id}", [],["Accept"=>"application/json"]);
+        
+        $this->assertEquals(Response::HTTP_UNPROCESSABLE_ENTITY,$this->response->getStatusCode());
+        
+        $data = $this->response->getOriginalContent();
+        
+        $this->assertArrayHasKey("title",$data);
+        $this->assertArrayHasKey("author",$data);
+        $this->assertArrayHasKey("description",$data);
+        
+        $this->assertEquals("The title field is required.",$data['title'][0]);
+        $this->assertEquals("The author field is required.",$data['author'][0]);
+        $this->assertEquals("The description field is required.",$data['description'][0]);
+        
     }
     /** @test **/
     public function destroy_should_remove_valid_book_and_return_204()

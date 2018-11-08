@@ -17,24 +17,16 @@ class BooksController extends Controller
     
     public function Show($id)
     {
-        try{
             return  $this->item(Book::findOrFail($id), new BookTransformer());
-        }
-        catch (ModelNotFoundException $ex)
-        {
-           return response()->json([
-                'error' => [
-                    'message' => 'Not Found',
-                    'status'=> 404
-                 ]
-            ], 404); 
-        }
-        
     }
     
     public function Store(Request $request)
     {
-        
+        $this->validate($request, [
+            'title'=>'required',
+            'description'=>'required',
+            'author'=>'required'
+        ]);
         $book = Book::create($request->all()); 
         $data = $this->item($book, new BookTransformer);
         return response()->json($data, 201,['location'=> route('books.Show', ['id'=>$book->id])]);
@@ -53,6 +45,11 @@ class BooksController extends Controller
                 ]
             ], 404);
         }
+        $this->validate($req, [
+            'title'=>'required',
+            'description'=>'required',
+            'author'=>'required'
+        ]);
         $book->fill($req->all());
         $book->save();
         return response($this->item($book,new BookTransformer), 200);
