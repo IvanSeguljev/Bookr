@@ -23,9 +23,15 @@ class BooksController extends Controller
     public function Store(Request $request)
     {
         $this->validate($request, [
-            'title'=>'required',
+            'title'=>'required|max:255',
             'description'=>'required',
             'author'=>'required'
+        ],
+        [
+            'title.required'=>'Morate uneti naslov!',
+            'description.required'=>'Morate uneti opis!',
+            'author.required'=>'Morate uneti autora!',
+            'title.max'=>'Naslov ne sme biti duzi od 255 karaktera!'
         ]);
         $book = Book::create($request->all()); 
         $data = $this->item($book, new BookTransformer);
@@ -46,9 +52,15 @@ class BooksController extends Controller
             ], 404);
         }
         $this->validate($req, [
-            'title'=>'required',
+            'title'=>'required|max:255',
             'description'=>'required',
             'author'=>'required'
+        ],
+        [
+            'title.required'=>'Morate uneti naslov!',
+            'description.required'=>'Morate uneti opis!',
+            'author.required'=>'Morate uneti autora!',
+            'title.max'=>'Naslov ne sme biti duzi od 255 karaktera!'
         ]);
         $book->fill($req->all());
         $book->save();

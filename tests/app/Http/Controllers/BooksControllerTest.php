@@ -21,6 +21,9 @@ class BooksControllerTest extends TestCase{
 
 
     use DatabaseMigrations;
+    
+    //Index tests
+    
     /** @test **/
     public function index_status_code_should_be_200()
     {
@@ -48,6 +51,8 @@ class BooksControllerTest extends TestCase{
             ]);
         }
     }
+    
+    //Show tests
     
     /** @test **/
     public function show_should_return_valid_book()
@@ -92,6 +97,8 @@ class BooksControllerTest extends TestCase{
         $this->assertNotRegExp('/Book not found/', $this->response->getOriginalContent(),'BooksController@show route matching when it should not.');
     }
     
+    //Store tests
+    
     /** @test **/
     public function store_should_store_book_in_database(){
         $this->post('/books', [
@@ -124,8 +131,7 @@ class BooksControllerTest extends TestCase{
         ]);
         $this->seeStatusCode(201)->seeHasHeaderRegExp('location', '/\/books\/[\d]+$/');
     }
-    
-    
+        
     /** @test **/
     public function it_validates_required_fields_when_storing_a_book()
     {
@@ -139,10 +145,30 @@ class BooksControllerTest extends TestCase{
         $this->assertArrayHasKey('author',$body);
         $this->assertArrayHasKey('description',$body);
         
-        $this->assertEquals('The title field is required.',$body['title'][0]);
-        $this->assertEquals('The author field is required.',$body['author'][0]);
-        $this->assertEquals('The description field is required.',$body['description'][0]);
+        $this->assertEquals('Morate uneti naslov!',$body['title'][0]);
+        $this->assertEquals('Morate uneti autora!',$body['author'][0]);
+        $this->assertEquals('Morate uneti opis!',$body['description'][0]);
     }
+    /** @test **/
+    public function store_fails_when_title_too_long()
+    {
+        $book = factory(\App\Book::class)->make();
+        $book->title = str_repeat('a', 256);
+        
+        $this->post('/books', [
+            'description' =>$book->description,
+            'title' => $book->title,
+            'author' =>$book->author
+        ], ['Accept'=>"application/json"]);
+        
+        $this->assertEquals(Response::HTTP_UNPROCESSABLE_ENTITY,$this->response->getStatusCode());
+        $this->seeJson(['title'=>['Naslov ne sme biti duzi od 255 karaktera!']])
+                ->notSeeInDatabase('books', ['title'=>$book->title]);      
+        
+    }
+
+
+    //Update tests
     
     /** @test **/
     public function update_should_only_change_fillable_fields()
@@ -216,11 +242,31 @@ class BooksControllerTest extends TestCase{
         $this->assertArrayHasKey("author",$data);
         $this->assertArrayHasKey("description",$data);
         
-        $this->assertEquals("The title field is required.",$data['title'][0]);
-        $this->assertEquals("The author field is required.",$data['author'][0]);
-        $this->assertEquals("The description field is required.",$data['description'][0]);
+        $this->assertEquals('Morate uneti naslov!',$data['title'][0]);
+        $this->assertEquals('Morate uneti autora!',$data['author'][0]);
+        $this->assertEquals('Morate uneti opis!',$data['description'][0]);
+    }
+    
+    /** @test **/
+    public function update_fails_when_title_too_long()
+    {
+         $book = factory(\App\Book::class)->create();
+        $book->title = str_repeat('a', 256);
+        
+        $this->put('/books/'.$book->id, [
+            'description' =>$book->description,
+            'title' => $book->title,
+            'author' =>$book->author
+        ], ['Accept'=>"application/json"]);
+        
+        $this->assertEquals(Response::HTTP_UNPROCESSABLE_ENTITY,$this->response->getStatusCode());
+        $this->seeJson(['title'=>['Naslov ne sme biti duzi od 255 karaktera!']])
+                ->notSeeInDatabase('books', ['title'=>$book->title]);      
         
     }
+    
+    //Destroy tests
+    
     /** @test **/
     public function destroy_should_remove_valid_book_and_return_204()
     {
