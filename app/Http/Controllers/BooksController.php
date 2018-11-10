@@ -25,17 +25,19 @@ class BooksController extends Controller
         $this->validate($request, [
             'title'=>'required|max:255',
             'description'=>'required',
-            'author'=>'required'
+            'author_id'=>'required|exists:authors,id'
         ],
         [
             'title.required'=>'Morate uneti naslov!',
             'description.required'=>'Morate uneti opis!',
-            'author.required'=>'Morate uneti autora!',
+            'author_id.required'=>'Morate uneti id autora!',
             'title.max'=>'Naslov ne sme biti duzi od 255 karaktera!'
         ]);
         $book = Book::create($request->all()); 
         $data = $this->item($book, new BookTransformer);
+        
         return response()->json($data, 201,['location'=> route('books.Show', ['id'=>$book->id])]);
+        
     }
     
     public function Update(Request $req,$id){
@@ -54,12 +56,12 @@ class BooksController extends Controller
         $this->validate($req, [
             'title'=>'required|max:255',
             'description'=>'required',
-            'author'=>'required'
+            'author_id'=>'required|exists:authors,id'
         ],
         [
             'title.required'=>'Morate uneti naslov!',
             'description.required'=>'Morate uneti opis!',
-            'author.required'=>'Morate uneti autora!',
+            'author_id.required'=>'Morate uneti id autora!',
             'title.max'=>'Naslov ne sme biti duzi od 255 karaktera!'
         ]);
         $book->fill($req->all());

@@ -33,7 +33,7 @@ class BooksControllerTest extends TestCase{
     /** @test **/
     public function index_should_return_collection_of_records()
     {
-        $books = factory('App\Book',2)->create();
+        $books = $this->bookFactory(2);
         
         $this->get('/books');
         $content = $this->response->getOriginalContent();
@@ -45,7 +45,7 @@ class BooksControllerTest extends TestCase{
                 'id' =>$book->id,
                 'title' => $book->title,
                 'description' => $book->description,
-                'author' => $book->author,
+                'author' => $book->author->name,
                 'created' => $book->created_at->toIso8601String(),
                 'updated' => $book->updated_at->toIso8601String()
             ]);
@@ -57,7 +57,7 @@ class BooksControllerTest extends TestCase{
     /** @test **/
     public function show_should_return_valid_book()
     {
-        $book = factory('App\Book')->create();
+        $book = $this->bookFactory();
         
         $this->get("/books/" . $book->id);
         
@@ -67,7 +67,7 @@ class BooksControllerTest extends TestCase{
         $this->assertArrayHasKey("data",$content);
         
         $this->assertEquals($book->id,$data['id']);
-        $this->assertEquals($book->author,$data['author']);
+        $this->assertEquals($book->author->name,$data['author']);
         $this->assertEquals($book->description,$data['description']);
         $this->assertEquals($book->title,$data['title']);
         $this->assertEquals($book->created_at->toIso8601String(),$data['created']);
@@ -101,35 +101,40 @@ class BooksControllerTest extends TestCase{
     
     /** @test **/
     public function store_should_store_book_in_database(){
+        $book = $this->bookFactory();
         $this->post('/books', [
-            'title'=>"test knjiga",
-            'description'=>"test opis",
-            'author'=>"test autor"
+            'title'=>$book->title,
+            'description'=>$book->description,
+            'author_id'=>$book->author->id
         ]);
         
         $body = $this->response->getOriginalContent();
+        
         $this->assertArrayHasKey("data",$body);
         
         $data = $body['data'];
-        $this->assertEquals("test knjiga",$data['title']);
-        $this->assertEquals('test opis',$data['description']);
-        $this->assertEquals("test autor",$data['author']);
+        $this->assertEquals($book->title,$data['title']);
+        $this->assertEquals($book->description,$data['description']);
+        $this->assertEquals($book->author->name,$data['author']);
         $this->assertTrue($data['id']>0,"Id mora biti veci od 0 !!!");
         $this->assertEquals(Carbon::now()->toIso8601String(),$data['created']);
         $this->assertEquals(Carbon::now()->toIso8601String(),$data['created']);
         
         
-        $this->seeInDatabase('books', ["title"=>"test knjiga"]);
+        $this->seeInDatabase('books', ["title"=>$book->title]);
     }
     
     /** @test **/
     public function store_should_return_status_201_and_location_header(){
+        $book = $this->bookFactory();
          $this->post('/books', [
-            'title'=>"test knjiga",
-            'description'=>"test opis",
-            'author'=>"test autor"
+            'title'=>$book->title,
+            'description'=>$book->description,
+            'author_id'=>$book->author_id
         ]);
+       
         $this->seeStatusCode(201)->seeHasHeaderRegExp('location', '/\/books\/[\d]+$/');
+        
     }
         
     /** @test **/
@@ -142,28 +147,52 @@ class BooksControllerTest extends TestCase{
         $body = $this->response->getOriginalContent();
         
         $this->assertArrayHasKey('title',$body);
-        $this->assertArrayHasKey('author',$body);
+        $this->assertArrayHasKey('author_id',$body);
         $this->assertArrayHasKey('description',$body);
         
+        
         $this->assertEquals('Morate uneti naslov!',$body['title'][0]);
-        $this->assertEquals('Morate uneti autora!',$body['author'][0]);
+        $this->assertEquals('Morate uneti id autora!',$body['author_id'][0]);
         $this->assertEquals('Morate uneti opis!',$body['description'][0]);
     }
     /** @test **/
     public function store_fails_when_title_too_long()
     {
-        $book = factory(\App\Book::class)->make();
+        $book = $this->bookFactory();
         $book->title = str_repeat('a', 256);
         
         $this->post('/books', [
             'description' =>$book->description,
             'title' => $book->title,
-            'author' =>$book->author
+            'author_id' =>$book->author->id
         ], ['Accept'=>"application/json"]);
         
         $this->assertEquals(Response::HTTP_UNPROCESSABLE_ENTITY,$this->response->getStatusCode());
         $this->seeJson(['title'=>['Naslov ne sme biti duzi od 255 karaktera!']])
                 ->notSeeInDatabase('books', ['title'=>$book->title]);      
+        
+    }
+    
+    /** @test **/
+    public function store_passes_when_title_max_lenght()
+    {
+        $book = $this->bookFactory();
+        $title = str_repeat('b', 255);
+        
+        $this->post('/books', [
+            'description' =>"opis",
+            'title' => $title,
+            'author_id' =>$book->author->id
+        ], ['Accept'=>"application/json"]);
+        
+        $data = $this->response->getOriginalContent()["data"];
+        
+        $this->assertEquals(201,$this->response->getStatusCode());
+        $this->assertEquals($title,$data['title']);
+        $this->assertEquals("opis",$data['description']);
+        $this->assertEquals($book->author->name,$data['author']);
+        
+        $this->SeeInDatabase('books', ['title'=>$title]);      
         
     }
 
@@ -173,17 +202,14 @@ class BooksControllerTest extends TestCase{
     /** @test **/
     public function update_should_only_change_fillable_fields()
     {
-        $book = factory('App\Book')->create([
-           'title' => 'Ja nisam metalac',
-           'author' => 'Random lik koji navija za zvezdu',
-           'description' => 'Tuzna prica o liku kome je jedini kvalitet sto nije metalac'
-        ]);
+        $book = $this->bookFactory();
+        $newAuthor = factory(\App\Author::class)->create();
         
         $this->put("/books/{$book->id}", [
             'id'=>'666',
             'title'=>'Updejtovana Knjiga',
             'description'=>'updejtovani opis',
-            'author'=>'updejtovani autor'
+            'author_id'=>$newAuthor->id
         ]);
        
         $this->seeStatusCode(200)
@@ -191,7 +217,7 @@ class BooksControllerTest extends TestCase{
                     'id'=>$book->id,
                     'title'=>'Updejtovana Knjiga',
                     'description'=>'updejtovani opis',
-                    'author'=>'updejtovani autor'
+                    'author'=>$newAuthor->name
                 ]);
         $this->seeInDatabase('books', [
             'id'=>$book->id,
@@ -220,6 +246,7 @@ class BooksControllerTest extends TestCase{
                 "message"=>"Not Found"
             ]
         ]);
+        
     }
     /** @test **/
     public function update_route_must_not_match_invalid_route()
@@ -230,7 +257,7 @@ class BooksControllerTest extends TestCase{
     /** @test **/
     public function it_validates_passed_fields_when_updating_a_book()
     {
-        $book = factory(\App\Book::class)->create();
+        $book = $this->bookFactory();
         
         $this->put("/books/{$book->id}", [],["Accept"=>"application/json"]);
         
@@ -239,30 +266,51 @@ class BooksControllerTest extends TestCase{
         $data = $this->response->getOriginalContent();
         
         $this->assertArrayHasKey("title",$data);
-        $this->assertArrayHasKey("author",$data);
+        $this->assertArrayHasKey("author_id",$data);
         $this->assertArrayHasKey("description",$data);
         
         $this->assertEquals('Morate uneti naslov!',$data['title'][0]);
-        $this->assertEquals('Morate uneti autora!',$data['author'][0]);
+        $this->assertEquals('Morate uneti id autora!',$data['author_id'][0]);
         $this->assertEquals('Morate uneti opis!',$data['description'][0]);
     }
     
     /** @test **/
     public function update_fails_when_title_too_long()
     {
-         $book = factory(\App\Book::class)->create();
+        $book = $this->bookFactory();
         $book->title = str_repeat('a', 256);
         
         $this->put('/books/'.$book->id, [
             'description' =>$book->description,
             'title' => $book->title,
-            'author' =>$book->author
+            'author_id' =>$book->author_id
         ], ['Accept'=>"application/json"]);
         
         $this->assertEquals(Response::HTTP_UNPROCESSABLE_ENTITY,$this->response->getStatusCode());
         $this->seeJson(['title'=>['Naslov ne sme biti duzi od 255 karaktera!']])
                 ->notSeeInDatabase('books', ['title'=>$book->title]);      
         
+        
+    }
+    /** @test **/
+    public function update_passes_when_title_max_lenght()
+    {
+        $book = $this->bookFactory();
+        $title = str_repeat('a', 255);
+        
+        $this->put('/books/'.$book->id, [
+            'description' =>"opis",
+            'title' => $title,
+            'author_id' =>$book->author_id
+        ], ['Accept'=>"application/json"]);
+        $data = $this->response->getOriginalContent()["data"];
+        
+        $this->assertEquals(200,$this->response->getStatusCode());
+        $this->assertEquals($title,$data['title']);
+        $this->assertEquals("opis",$data['description']);
+        $this->assertEquals($book->author->name,$data['author']);
+        
+        $this->SeeInDatabase('books', ['title'=>$title,'id'=>$book->id]);      
     }
     
     //Destroy tests
@@ -270,7 +318,7 @@ class BooksControllerTest extends TestCase{
     /** @test **/
     public function destroy_should_remove_valid_book_and_return_204()
     {
-        $book = factory('App\Book')->create();
+        $book = $this->bookFactory();
         $this->delete('/books/'.$book->id);
         $this->seeStatusCode(204)->isEmpty();
         

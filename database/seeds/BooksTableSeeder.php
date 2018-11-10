@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Database\Eloquent\Model;
 
 class BooksTableSeeder extends Seeder
 {
@@ -11,19 +12,13 @@ class BooksTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('books')->insert([
-        'title' => 'Gospodar prstenova',
-        'description' => 'Frodo i druzina kolju saurona',
-        'author' => 'H. G. Wells',
-        'created_at' => Carbon::now(),
-        'updated_at' => Carbon::now(),
-        ]);
-        DB::table('books')->insert([
-        'title' => 'PHP Kuvar',
-        'description' => 'Citate ovo i jos vam je cudno sto vas je zena ostavila?',
-        'author' => 'Madeleine L\'Engle',
-        'created_at' => Carbon::now(),
-        'updated_at' => Carbon::now()
-        ]); 
+        factory(\App\Author::class,10)->create()->each(function ($author){
+            $bookCount = rand(1,6);
+            while($bookCount>0)
+            {
+                $author->books()->save(factory(App\Book::class)->make());
+                $bookCount--;
+            }
+        });
     }
 }
