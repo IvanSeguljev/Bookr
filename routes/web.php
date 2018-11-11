@@ -23,3 +23,14 @@ $router->post("/books","BooksController@Store");
 $router->put("/books/{id:[\d]+}",'BooksController@Update');
 
 $router->delete("/books/{id:[\d]+}",'BooksController@Delete');
+
+$router->group([
+    'prefix'=>'/authors',
+    'namespace'=>'App\Http\Controllers'
+],function (\Laravel\Lumen\Routing\Router $app){
+    $app->get('/','AuthorsController@index');
+    $app->post('/','AuthorsController@store');
+    $app->get('/{id:[\d]+}','AuthorsController@show');
+    $app->put('/{id:[\d]+}','AuthorsController@update');
+    $app->delete('/{id:[\d]+}','AuthorsController@destroy');
+});
