@@ -1,3 +1,4 @@
+Project done in Lumen framework. Done using exclusively TDD (Test Driven Development)
 # Lumen PHP Framework
 
 [![Build Status](https://travis-ci.org/laravel/lumen-framework.svg)](https://travis-ci.org/laravel/lumen-framework)
